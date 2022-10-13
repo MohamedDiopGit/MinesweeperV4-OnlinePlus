@@ -1,0 +1,12 @@
+# Ignore the JavaDoc folder
+JavaDoc-complient/
+
+# Ignore the build directory
+out/
+
+# Ignore the .iml file which depends on your project structure in Intellij IDEA
+.iml
+
+*.xml
+*.iml
+*.zip
