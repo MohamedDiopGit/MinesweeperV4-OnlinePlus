@@ -8,7 +8,7 @@ import java.awt.*;
  * {@code Client} : Client program that makes a connection with a {@code Server}
  * via socket, referenced by ip address and port.
  * 
- * @see ServerStatic
+ * @see Server
  */
 public class Client implements Runnable {
 

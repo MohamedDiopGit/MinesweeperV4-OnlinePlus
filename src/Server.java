@@ -136,7 +136,7 @@ public class Server implements Runnable {
 
             // Connection notification to all clients connected
             chatServer.addTextToChat(getUtcDateTime() + " [" + pseudoClient + "]: " + " is connected");
-            notifyConnectionToAll(idClient, pseudoClient, true, out);
+            notifyConnectionToAll(pseudoClient, true, out);
             
             updateConnectedClientToAll();
             sendToAllField();
@@ -174,7 +174,7 @@ public class Server implements Runnable {
             
             // Clean close of the session
             chatServer.addTextToChat(getUtcDateTime() + " [" + pseudoClient + "]: " + " has disconnected.");
-            notifyConnectionToAll(idClient, pseudoClient, false, out);
+            notifyConnectionToAll(pseudoClient, false, out);
 
 
             out.close();
@@ -263,11 +263,9 @@ public void sendToAllField() {
 
     /**
      * Notifies the connected client a specific client is connected
-     * @param idClientConnected
      * @param pseudoClient
-     * @param message
      */
-    public void notifyConnectionToAll(int idClientConnected, String pseudoClient, boolean isConnected, DataOutputStream outClient) {
+    public void notifyConnectionToAll(String pseudoClient, boolean isConnected, DataOutputStream outClient) {
         String messageComplete;
         if(isConnected){
             messageComplete = getUtcDateTime() + " [" + pseudoClient + "]: " + " is connected";

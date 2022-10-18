@@ -67,7 +67,7 @@ public class ChatClient extends JPanel implements ActionListener {
     /**
      * Client : Setter which take the outstream of {@code Client} to {@code Server}.
      * 
-     * @param outStream
+     * @param outStream : DataOutput
      */
     public void setOutputStream(DataOutputStream outStream) {
         this.out = outStream;

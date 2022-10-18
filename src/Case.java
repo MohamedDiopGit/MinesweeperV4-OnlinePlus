@@ -131,6 +131,7 @@ public class Case extends JPanel implements MouseListener {
         if (leftClick && text.equals("x")) {
             gui.gameOver();
         }
+        gui.checkIfWin(); // Check if the game is winned.
     }
 
     @Override

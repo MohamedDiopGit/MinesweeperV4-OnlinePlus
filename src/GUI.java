@@ -517,7 +517,7 @@ public class GUI extends JPanel implements Runnable {
     /**
      * Add the connected clients on the menuBar
      * 
-     * @param connectedClients
+     * @param connectedClientsUpdate
      */
     public void setConnectedClientsOnMenu(JMenu connectedClientsUpdate) {
         this.connectedClients = connectedClientsUpdate;
