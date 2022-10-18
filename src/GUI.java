@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import java.util.List;
+
 /**
  * {@code GUI} : Graphic User Interface class, extends {@code JPanel}.
  * The main component that runs the Graphic interface,
@@ -48,12 +49,8 @@ public class GUI extends JPanel implements Runnable {
      * scoreLabel of the current game session.
      */
     private JLabel scoreLabel = new JLabel();
-    /**
-     * scoreLabel of the current game session to be copy on the {@code JLabel}
-     * instance.
-     */
-    private int score;
-    private boolean propagated = false;
+
+    private int scoreFlag;
     private int openedCases = 0;
     /**
      * Time session (elapsed) information to display
@@ -93,8 +90,9 @@ public class GUI extends JPanel implements Runnable {
     private Thread clientSession;
     private ChatClient chatClient;
     private Server server;
+
     /**
-     * Label for connected clients in the subMenu
+     * Label for connected clients in the menu
      */
     private JMenu connectedClients = new JMenu("Connected clients");
 
@@ -115,23 +113,6 @@ public class GUI extends JPanel implements Runnable {
 
         startNewGame();
 
-    }
-
-    GUI() {
-        this.field = new Field(Levels.EASY);
-
-        setLayout(new BorderLayout());
-        panelNorth.setBackground(Color.lightGray);
-        setBorder(BorderFactory.createRaisedBevelBorder());
-        panelNorth.setBorder(BorderFactory.createLoweredBevelBorder());
-
-        startNewGame();
-
-    }
-
-    public void propagationCase(int xOrigin, int yOrigin) {
-
-        propagated = true;
     }
 
     /**
@@ -164,7 +145,7 @@ public class GUI extends JPanel implements Runnable {
         panelNorth.setLayout(new BorderLayout());
 
         menuBar = new JMenuBar();
-        JMenuItem menu = new JMenu("Mode");
+        JMenuItem modeMenu = new JMenu("Mode");
         JMenuItem easyMode = new JMenuItem("EASY");
         JMenuItem mediumMode = new JMenuItem("MEDIUM");
         JMenuItem hardMode = new JMenuItem("HARD");
@@ -173,34 +154,38 @@ public class GUI extends JPanel implements Runnable {
 
         option.add(saveGame);
 
-        // Server options
+        // SERVER OPTIONS MENU
+        JMenu infoServer = new JMenu("Server");
         JMenuItem connectionToServer = new JMenuItem("Connection to server");
         JMenuItem disconnectionFromServer = new JMenuItem("Disconnect from server");
-        JMenu infoServer = new JMenu("Server");
 
         infoServer.add(connectionToServer);
         infoServer.add(disconnectionFromServer);
 
         levelMode.setText(String.valueOf(levelGame));
 
-        menu.add(easyMode);
-        menu.add(mediumMode);
-        menu.add(hardMode);
-        menu.add(customMode);
+        // MODE MENU
+        modeMenu.add(easyMode);
+        modeMenu.add(mediumMode);
+        modeMenu.add(hardMode);
+        modeMenu.add(customMode);
 
+        // MENU BAR
         menuBar.add(option);
-        menuBar.add(menu);
+        menuBar.add(modeMenu);
         menuBar.add(levelMode);
         menuBar.add(infoServer);
         menuBar.add(connectedClients);
         menuBar.setBorder(BorderFactory.createRaisedBevelBorder());
 
+        // CUSTOM APPEARANCE FOR SIDE BLOCKS
         timeSession.setForeground(Color.RED);
         scoreLabel.setForeground(Color.RED);
 
         scoreLabel.setFont(new Font("Monospaced", Font.BOLD, 30));
         timeSession.setFont(new Font("Monospaced", Font.BOLD, 30));
 
+        // PANEL AND RESTART BUTTON CUSTOMIZATION
         JPanel panelNorthWest = new JPanel(new FlowLayout());
         JPanel panelNorthEast = new JPanel(new FlowLayout());
         panelNorthCenter = new JPanel(new FlowLayout());
@@ -227,7 +212,7 @@ public class GUI extends JPanel implements Runnable {
         connectionToServer.addActionListener(evt -> modeOnline());
         disconnectionFromServer.addActionListener(evt -> modeOffline());
 
-        // Add different mode in the menu
+        // Add different mode actions in the menu
         easyMode.addActionListener(evt -> selectorLevelGame(Levels.EASY));
         mediumMode.addActionListener(evt -> selectorLevelGame(Levels.MEDIUM));
         hardMode.addActionListener(evt -> selectorLevelGame(Levels.HARD));
@@ -242,7 +227,7 @@ public class GUI extends JPanel implements Runnable {
      * Activates the mode online by starting a client session
      */
     public void modeOnline() {
-        if(!modeOnline){
+        if (!modeOnline) {
             clientSession = new Thread(this);
             clientSession.start();
         }
@@ -252,11 +237,10 @@ public class GUI extends JPanel implements Runnable {
      * Desactivate the mode online by closing the connection and removing the chat
      */
     public void modeOffline() {
-        if(modeOnline){
-            // client.endSession();
-            // clientSession = null;
+        if (modeOnline) {
+
             modeOnline = false;
-            if(chatClient != null){
+            if (chatClient != null) {
                 main.remove(chatClient);
             }
             setTitleFrame("Minesweeper");
@@ -268,16 +252,29 @@ public class GUI extends JPanel implements Runnable {
         }
     }
 
+    /**
+     * Set the title frame for this GUI on main
+     * 
+     * @param titleFrame
+     */
     public void setTitleFrame(String titleFrame) {
         main.setTitle(titleFrame);
     }
+
+    /**
+     * Allow to create a specific thread for running the client
+     */
     @Override
     public void run() {
         modeOnline = true;
         client = new Client(this);
     }
 
-
+    /**
+     * Selects and sets a mode level for the game
+     * 
+     * @param level
+     */
     public void selectorLevelGame(Levels level) {
         modeOnline = false;
         field = new Field(level);
@@ -287,10 +284,10 @@ public class GUI extends JPanel implements Runnable {
     }
 
     /**
-     * Initialization method for the field.
+     * Initialization method for the grid cases (main grid).
      */
     public void initializationFieldPanel() { // Initialization of boxes with different values for a
-                                        // certain area / allow to place flags on mines
+        // certain area / allow to place flags on mines
 
         remove(panelCenter); // initialization of the panel
         panelCenter = new JPanel();
@@ -307,7 +304,7 @@ public class GUI extends JPanel implements Runnable {
 
                 Case caseToAdd = new Case(indexCase, x, y, this, modeOnline);
                 cases.add(caseToAdd);
-                panelCenter.add(cases.get(cases.size()-1));
+                panelCenter.add(cases.get(cases.size() - 1));
 
                 indexCase++;
             }
@@ -330,28 +327,26 @@ public class GUI extends JPanel implements Runnable {
             }
         });
 
-
     }
 
     /**
      * Generates a new field, and restarts the timer, and the scoreLabel of the
      * current
      * game.
-     * It also calls the {@code displayStartEmptyField()} method to clear the
+     * It also calls the {@code initializationFieldPanel()} method to clear the
      * field/grid.
      * 
-     * @see #displayStartEmptyField()
+     * @see #initializationFieldPanel()
      */
     public void reinitialize() {
-        score = field.getNumberOfMines();
-        scoreLabel.setText(String.valueOf(score));
+        scoreFlag = field.getNumberOfMines();
+        scoreLabel.setText(String.valueOf(scoreFlag));
         timeInit();
-        
 
         field.initField();
         this.initializationFieldPanel();
 
-        if(server != null){     // Restart all field on client via server if he is on
+        if (server != null) { // Restart all field on client via server if he is on
             server.sendToAllField();
             main.pack();
         }
@@ -367,7 +362,7 @@ public class GUI extends JPanel implements Runnable {
      */
     public void timeInit() { //
         seconds = 0;
-        if(timer != null){
+        if (timer != null) {
             timer.stop();
         }
         timeSession.setText(String.valueOf(seconds));
@@ -382,7 +377,7 @@ public class GUI extends JPanel implements Runnable {
     }
 
     /**
-     * Saves the game level in a local file "LevelRegistred.dat"
+     * Saves the game level in a local file "LevelRegistred.dat".
      */
     public void saveGameLevel() {
         new LevelsFileWriter(this.levelGame);
@@ -393,45 +388,89 @@ public class GUI extends JPanel implements Runnable {
     public Field getFieldFromGUI() {
         return field;
     }
-    public void upScore() {
-        score++;
-        scoreLabel.setText(String.valueOf(score));
+
+    /**
+     * Increments the flag counter (triggered by a flag removal).
+     */
+    public void upScoreFlag() {
+        scoreFlag++;
+        scoreLabel.setText(String.valueOf(scoreFlag));
     }
 
-    public void downScore() {
-        score--;
-        scoreLabel.setText(String.valueOf(score));
+    /**
+     * Decrements the flag counter (triggered by a flag deposal).
+     */
+    public void downScoreFlag() {
+        scoreFlag--;
+        scoreLabel.setText(String.valueOf(scoreFlag));
     }
 
+    /**
+     * Triggers the game over and restarts the game
+     */
     public void gameOver() {
         JOptionPane.showMessageDialog(this, "Mine clicked on.",
                 "Game over", JOptionPane.INFORMATION_MESSAGE);
-        if(modeOnline && server == null){ // only client send this
+        if (modeOnline && server == null) { // only client send this
             client.sendMessageToServer("-1:resetField");
-        }
-        else{
+        } else {
             startNewGame();
         }
     }
 
+    /**
+     * Checks if the game is winned
+     */
     public void checkIfWin() {
         int totalCases = field.getDim() * field.getDim();
-        if ( ((totalCases - openedCases) == field.getNumberOfMines()) && score == 0) {
+        if (((totalCases - openedCases) == field.getNumberOfMines()) && scoreFlag == 0) {
             JOptionPane.showMessageDialog(this, "You won.",
                     "Game win", JOptionPane.INFORMATION_MESSAGE);
             openedCases = 0;
-            if(modeOnline && server == null){
+            if (modeOnline && server == null) {
                 client.sendMessageToServer("-1:resetField");
-            }
-            else{
+            } else {
                 startNewGame();
             }
         }
     }
 
+    /**
+     * Increments the number of cases opened.
+     */
     public void incrementCasesOpened() {
         openedCases++;
     }
+
+    /**
+     * Notifies the server that a click has occurred on a case which further
+     * triggers {@code updateCase}.
+     * 
+     * @param indexCase
+     * @param notification
+     * @see #updateCase(int, String)
+     */
+    public void notifyClickOnCase(int indexCase, String notification) {
+        client.clickOnCaseToServer(indexCase, notification);
+    }
+
+    /**
+     * Trigger a click (referenced by index) on a case via left or right Click from
+     * the server.
+     * 
+     * @param indexCaseReceived
+     * @param typeClicked
+     */
+    public void updateCase(int indexCaseReceived, String typeClicked) {
+        System.out.println("Received: " + indexCaseReceived + " " + typeClicked);
+        if (typeClicked.equals("rightClick")) {
+            cases.get(indexCaseReceived).rightClick();
+        } else if (typeClicked.equals("leftClick")) {
+            cases.get(indexCaseReceived).leftClick();
+        }
+    }
+
+    // GETTERS AND SETTERS SECTION
 
     public Field getField() {
         return this.field;
@@ -445,29 +484,15 @@ public class GUI extends JPanel implements Runnable {
         field.setFieldGrid(x, y, valueBool);
     }
 
-    public void updateCase(int indexCaseReceived, String typeClicked) {
-        System.out.println("Received: "+indexCaseReceived+" "+typeClicked);
-        if(typeClicked.equals("rightClick")){
-            cases.get(indexCaseReceived).rightClick();
-        }
-        else if(typeClicked.equals("leftClick")){
-            cases.get(indexCaseReceived).leftClick();
-        }
-    }
-
-	public void setLevelMode(String levelModeSelected) {
+    public void setLevelMode(String levelModeSelected) {
         levelMode.setText(levelModeSelected);
-	}
+    }
 
     public String getLevelMode() {
         return levelMode.getText();
     }
 
-    public void notifyClickOnCase(int indexCase, String notification) {
-        client.clickOnCaseToServer(indexCase, notification);
-    }
-
-    public void setChatClient(String pseudo, DataOutputStream out){
+    public void setChatClient(String pseudo, DataOutputStream out) {
         chatClient = new ChatClient(pseudo);
         chatClient.setOutputStream(out);
         main.add(chatClient);
@@ -491,13 +516,14 @@ public class GUI extends JPanel implements Runnable {
 
     /**
      * Add the connected clients on the menuBar
+     * 
      * @param connectedClients
      */
     public void setConnectedClientsOnMenu(JMenu connectedClientsUpdate) {
         this.connectedClients = connectedClientsUpdate;
     }
 
-    public JMenu getConnectedClients(){
+    public JMenu getConnectedClients() {
         return connectedClients;
     }
 

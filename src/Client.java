@@ -10,7 +10,7 @@ import java.awt.*;
  * 
  * @see ServerStatic
  */
-public class Client implements Runnable  {
+public class Client implements Runnable {
 
     /**
      * Input Stream for collecting data from server.
@@ -28,31 +28,30 @@ public class Client implements Runnable  {
     /**
      * Label for connected clients in the subMenu
      */
-    
+
     private JMenuItem connectedClient;
     private JMenu connectedClients = new JMenu();
     private GUI clientGui;
 
     Client(GUI gui) {
-        
+
         this.clientGui = gui;
-       
+
         // Realease version mode
-        // setClientParameters();
+        setClientParameters();
 
         // Debugging mode
-        Random r = new Random();
-        int alea = r.nextInt((100 - 0) + 1) + 0;
-        pseudo = "Client-"+alea;
-        gui.setTitleFrame(pseudo);
-        runClient("localhost", 10000,pseudo);  // Dev usage
-        
-    
+        // Random r = new Random();
+        // int alea = r.nextInt((100 - 0) + 1) + 0;
+        // pseudo = "Client-"+alea;
+        // gui.setTitleFrame(pseudo);
+        // runClient("localhost", 10000,pseudo); // Dev usage
+
     }
 
     // GUI METHODS
 
-    // NETWORK 
+    // NETWORK
 
     /**
      * Sets the client parameters for the client session.
@@ -90,29 +89,26 @@ public class Client implements Runnable  {
     private void runClient(String address, int port, String pseudo) {
         int idClient;
         System.out.print("Trying to connect to " + address + " port:" + port + "...");
-        try{
+        try {
             sock = new Socket(address, port);
             System.out.println("done.");
 
             // Initialize the streams
             out = new DataOutputStream(sock.getOutputStream());
             in = new DataInputStream(sock.getInputStream());
-      
+
             // Get information from the server
             out.writeUTF(pseudo);
 
-
             // Receive data : unique id of the client.
             idClient = in.readInt(); // id of client : reception
-            System.out.println("Client id: " + idClient);      
-            
+            System.out.println("Client id: " + idClient);
 
             // Read message from the server
-            
+
             chatReader.start();
 
-
-        } catch (IOException e ) {
+        } catch (IOException e) {
 
             JOptionPane.showMessageDialog(null, address + ":" + port + " unreachable. Retry later.",
                     "ERROR", JOptionPane.WARNING_MESSAGE);
@@ -135,7 +131,8 @@ public class Client implements Runnable  {
                 int indexCaseReceived;
                 messageReceived = in.readUTF();
 
-                if(messageReceived.equals("-1:initField")){  // (Re) Initialize the field via server
+                // (Re) Initialize the field via server
+                if (messageReceived.equals("-1:initField")) {
                     System.out.println("Received field..");
                     int dimParam;
                     boolean valueBool;
@@ -145,39 +142,43 @@ public class Client implements Runnable  {
                     numMinesToPlace = Integer.valueOf(in.readUTF());
                     clientGui.setField(new Field(numMinesToPlace, dimParam));
 
-                    for(int x=0; x<dimParam; x++) {
-                        for(int y=0; y<dimParam; y++) {
+                    for (int x = 0; x < dimParam; x++) {
+                        for (int y = 0; y < dimParam; y++) {
                             messageReceived = in.readUTF();
-                            if(messageReceived.equals("x")){
+                            if (messageReceived.equals("x")) {
                                 valueBool = true;
-                            }
-                            else{
+                            } else {
                                 valueBool = false;
                             }
                             clientGui.setFieldXY(x, y, valueBool);
-                            
+
                         }
                     }
-                    messageReceived = in.readUTF();  // Level mode selected on Server
+                    messageReceived = in.readUTF(); // Level mode selected on Server
                     clientGui.setLevelMode(messageReceived);
                     clientGui.timeInit();
                     clientGui.initializationFieldPanel();
                 }
 
-                else if(messageReceived.equals("-1:rightClick")){   // Simulate a right click on a specific index
+                // Simulate a right click on a specific index
+                else if (messageReceived.equals("-1:rightClick")) {
                     indexCaseReceived = in.readInt();
                     clientGui.updateCase(indexCaseReceived, "rightClick");
 
                 }
-                else if(messageReceived.equals("-1:leftClick")){    // Simulate a left click on a specific index
+
+                // Simulate a left click on a specific index
+                else if (messageReceived.equals("-1:leftClick")) {
                     indexCaseReceived = in.readInt();
                     clientGui.updateCase(indexCaseReceived, "leftClick");
                 }
-                else if(messageReceived.equals("-1:connectedClients")){  // Update the connected clients list
+
+                // Update the connected clients list
+                else if (messageReceived.equals("-1:connectedClients")) {
                     int totalConnected = in.readInt();
 
                     clientGui.getConnectedClients().removeAll();
-                    for(int i = 0; i < totalConnected; i++) {
+                    for (int i = 0; i < totalConnected; i++) {
                         messageReceived = in.readUTF();
                         connectedClient = new JMenuItem(messageReceived);
                         // connectedClients.add(connectedClient);
@@ -185,7 +186,9 @@ public class Client implements Runnable  {
                         clientGui.getConnectedClients().add(connectedClient);
                     }
                 }
-                else{
+
+                // Display a message on the chat box
+                else {
 
                     clientGui.getChatClient().addTextToChat(messageReceived);
                 }
@@ -197,32 +200,33 @@ public class Client implements Runnable  {
         chatReader = null;
     }
 
-
     /**
      * Sends a message to the server
+     * 
      * @param message
      */
-    public void sendMessageToServer(String message){
-        try{
+    public void sendMessageToServer(String message) {
+        try {
             out.writeUTF(message);
 
-        } catch (IOException e ) { 
+        } catch (IOException e) {
             System.out.println("error sending message: " + e.getMessage());
         }
     }
 
     /**
      * Simulate a click on a specific case
+     * 
      * @param indexCase
      * @param notification
      */
     public void clickOnCaseToServer(int indexCase, String notification) {
-        try{
+        try {
             System.out.println(notification + " " + indexCase);
             out.writeUTF(notification);
             out.writeInt(indexCase);
 
-        } catch (IOException e ) { 
+        } catch (IOException e) {
             System.out.println("error sending message: " + e.getMessage());
         }
     }

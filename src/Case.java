@@ -5,6 +5,9 @@ import java.awt.event.MouseListener;
 import static javax.swing.SwingUtilities.isLeftMouseButton;
 import static javax.swing.SwingUtilities.isRightMouseButton;
 
+/**
+ * {@code Case} : Create a custom case for the grid on the minesweeper.
+ */
 public class Case extends JPanel implements MouseListener {
     private int DIM = 50;
     private String text;
@@ -14,12 +17,22 @@ public class Case extends JPanel implements MouseListener {
     private GUI gui;
     private int flagPlaced = 0;
     private boolean openedCase = false;
-
-    private ImageIcon bomb = new ImageIcon("bomb.png");
-    private ImageIcon flag = new ImageIcon("flag.png");
     private boolean modeOnline = false;
     private int indexCase;
-    
+
+    // IMAGE IMPORT
+    private ImageIcon bomb = new ImageIcon("bomb.png");
+    private ImageIcon flag = new ImageIcon("flag.png");
+
+    /**
+     * Constructor for the case via GUI
+     * 
+     * @param indexCase
+     * @param x
+     * @param y
+     * @param gui
+     * @param modeOnline
+     */
     Case(int indexCase, int x, int y, GUI gui, boolean modeOnline) {
         this.gui = gui;
         this.modeOnline = modeOnline;
@@ -29,6 +42,7 @@ public class Case extends JPanel implements MouseListener {
         addMouseListener(this);
     }
 
+    // REPAINT THE CASE
     public void paintComponent(Graphics g) {
 
         if (leftClick) {
@@ -69,7 +83,7 @@ public class Case extends JPanel implements MouseListener {
                 } else { // Draw the case with the specified number of mines around it
                     g.drawString(text, -3 + (getWidth() + 1) / 2, 3 + (getHeight() + 1) / 2);
                 }
-                if(!openedCase){
+                if (!openedCase) {
                     gui.incrementCasesOpened();
                     openedCase = true;
                 }
@@ -84,10 +98,10 @@ public class Case extends JPanel implements MouseListener {
 
             if (flagPlaced == 0) {
                 g.drawImage(flag.getImage(), 0, 0, getWidth(), getHeight(), this);
-                gui.downScore();
+                gui.downScoreFlag();
                 flagPlaced = 1 - flagPlaced;
             } else {
-                gui.upScore();
+                gui.upScoreFlag();
                 flagPlaced = 1 - flagPlaced;
             }
             rightClick = false;
@@ -104,17 +118,17 @@ public class Case extends JPanel implements MouseListener {
     public void mouseClicked(MouseEvent e) {
         if (isLeftMouseButton(e)) { // left mouse button
             leftClick = true;
-            if(modeOnline){
-                gui.notifyClickOnCase(indexCase,"-1:leftClick");
+            if (modeOnline) {
+                gui.notifyClickOnCase(indexCase, "-1:leftClick");
             }
         } else if (isRightMouseButton(e)) {// right mouse button
             rightClick = true;
-            if(modeOnline){
-                gui.notifyClickOnCase(indexCase,"-1:rightClick");
+            if (modeOnline) {
+                gui.notifyClickOnCase(indexCase, "-1:rightClick");
             }
         }
         repaint();
-        if(leftClick && text.equals("x") ){
+        if (leftClick && text.equals("x")) {
             gui.gameOver();
         }
     }
@@ -146,14 +160,16 @@ public class Case extends JPanel implements MouseListener {
         // released = false;
     }
 
+    /**
+     * Simulates a right click on the case
+     */
     public void rightClick() {
-        if(!leftClick){  // No modification if already clicked
-            if(rightClick){  // Switch between right click on and off to add or remove flags
+        if (!leftClick) { // No modification if already clicked
+            if (rightClick) { // Switch between right click on and off to add or remove flags
                 rightClick = false;
                 System.out.println("Case: " + "rightClick FALSE");
                 repaint();
-            }
-            else{
+            } else {
                 System.out.println("Case: " + "rightClick");
                 rightClick = true;
                 repaint();
@@ -161,21 +177,13 @@ public class Case extends JPanel implements MouseListener {
         }
     }
 
-    public void leftClick() { 
+    /**
+     * Simulates a left click on this case
+     */
+    public void leftClick() {
         System.out.println("Case: " + "leftClick TRUE");
         leftClick = true;
         repaint();
     }
-
-    // public void gameOver() {
-    //     JOptionPane.showMessageDialog(this, "Mine clicked on.",
-    //             "Game over", JOptionPane.INFORMATION_MESSAGE);
-    //     if(modeOnline && gui.getServer() == null){ // only client send this
-    //         gui.getClient().sendMessageToServer("-1:resetField");
-    //     }
-    //     else{
-    //         gui.startNewGame();
-    //     }
-    // }
 
 }

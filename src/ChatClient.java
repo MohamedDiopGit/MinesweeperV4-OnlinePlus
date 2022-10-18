@@ -7,8 +7,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataOutputStream;
 import java.io.IOException;
+
 /**
- * {@code ChatGUI} : Class that displays the chat box for the server. Acts like
+ * {@code ChatClient} : Class that displays the chat box for the server. Acts
+ * like
  * a log terminal.
  */
 public class ChatClient extends JPanel implements ActionListener {
@@ -21,7 +23,7 @@ public class ChatClient extends JPanel implements ActionListener {
      * Type text area for the chat box.
      */
     private JTextField textInput;
-    
+
     /**
      * Output stream to server.
      */
@@ -33,7 +35,7 @@ public class ChatClient extends JPanel implements ActionListener {
      * @param title
      */
     ChatClient(String title) {
-    
+
         // Parameters text areas.
         int width = 30;
 
@@ -51,9 +53,8 @@ public class ChatClient extends JPanel implements ActionListener {
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         JScrollPane scrollInput = new JScrollPane(textInput);
 
-
         setLayout(new BorderLayout());
-        
+
         panelSouth.add(scrollInput, BorderLayout.WEST);
         panelSouth.add(chatSubTitle, BorderLayout.CENTER);
 
@@ -72,7 +73,6 @@ public class ChatClient extends JPanel implements ActionListener {
         this.out = outStream;
     }
 
-    
     /**
      * It displays the message from a client to the server chat box, in the text
      * area.
@@ -82,7 +82,7 @@ public class ChatClient extends JPanel implements ActionListener {
     public synchronized void addTextToChat(String message) {
         textOutput.append(message + "\n");
     }
-    
+
     /**
      * Client : Sends the message typed to the server
      * 

@@ -1,5 +1,6 @@
 import javax.swing.JFrame;
 import java.awt.*;
+
 /**
  * {@code Main} application : Minesweeper program.
  */
@@ -8,7 +9,6 @@ public class Main extends JFrame {
      * Main GUI for the game : Minesweeper.
      */
     private final GUI gui;
-    // private final ButtonGUI buttonGUI;
     /**
      * Field to start with in the game.
      */
@@ -18,13 +18,17 @@ public class Main extends JFrame {
 
         setLayout(new FlowLayout());
         setTitle("Minesweeper");
-        loadGameLevel(); // Load the game level
-        this.field.initField(); // initialisation of the field
+
+        // Load the game level
+        loadGameLevel();
+
+        // initialisation of the field
+        this.field.initField();
 
         gui = new GUI(this);
         add(gui);
         // setContentPane(gui); // Set the center Panel for the frame
-        
+
         pack();
         // setResizable(false);
         setVisible(true);
@@ -38,15 +42,6 @@ public class Main extends JFrame {
      */
     public static void main(String[] args) {
         new Main();
-    }
-
-    /**
-     * Returns the current field that {@code Main} is running.
-     * 
-     * @return {@code Field}
-     */
-    public Field getField() { // Getter of the field
-        return this.field;
     }
 
     /**
@@ -70,7 +65,19 @@ public class Main extends JFrame {
             System.out.println("Failed to load last save... EASY_Mode selected.");
         }
     }
-    public GUI getGui(){
+
+    // GETTERS SECTION
+
+    /**
+     * Returns the current field that {@code Main} is running.
+     * 
+     * @return {@code Field}
+     */
+    public Field getField() { // Getter of the field
+        return this.field;
+    }
+
+    public GUI getGui() {
         return this.gui;
     }
 }

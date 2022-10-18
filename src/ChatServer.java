@@ -7,8 +7,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataOutputStream;
 import java.io.IOException;
+
 /**
- * {@code ChatGUI} : Class that displays the chat box for the server. Acts like
+ * {@code ChatServer} : Class that displays the chat box for the server. Acts
+ * like
  * a log terminal.
  */
 public class ChatServer extends JPanel implements ActionListener {
@@ -21,17 +23,16 @@ public class ChatServer extends JPanel implements ActionListener {
      * Type text area for the chat box.
      */
     private JTextField textInput;
-    
+
     /**
      * Output stream to server.
      */
     private DataOutputStream out;
-    
+
     /**
      * Constructor by default for the chat GUI server.
      */
     ChatServer() {
-        
 
         JLabel chatTitle = new JLabel("Server : Chat box", SwingConstants.CENTER);
         JLabel chatSubTitle = new JLabel("Message logs recording", SwingConstants.CENTER);
@@ -47,7 +48,6 @@ public class ChatServer extends JPanel implements ActionListener {
         add(chatTitle, BorderLayout.NORTH);
         add(scrollOutput, BorderLayout.CENTER);
         add(chatSubTitle, BorderLayout.SOUTH);
-        
 
     }
 
