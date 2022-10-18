@@ -256,7 +256,9 @@ public class GUI extends JPanel implements Runnable {
             // client.endSession();
             // clientSession = null;
             modeOnline = false;
-            main.remove(chatClient);
+            if(chatClient != null){
+                main.remove(chatClient);
+            }
             setTitleFrame("Minesweeper");
             main.loadGameLevel();
             main.pack();
@@ -497,5 +499,13 @@ public class GUI extends JPanel implements Runnable {
 
     public JMenu getConnectedClients(){
         return connectedClients;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public Server getServer() {
+        return server;
     }
 }

@@ -13,10 +13,6 @@ import java.awt.*;
 public class Client implements Runnable  {
 
     /**
-     * Message to send.
-     */
-    private String closer = "";
-    /**
      * Input Stream for collecting data from server.
      */
     private DataInputStream in;
@@ -28,14 +24,6 @@ public class Client implements Runnable  {
      */
     private Thread chatReader = new Thread(this);
 
-    /**
-     * Default constructor for the client session.
-     */
-    /**
-     * minesweeper GUI for the game : Minesweeper.
-     */
-    private Main minesweeper;
-    private JLabel levelGameModeInfo = new JLabel();
     private String pseudo;
     /**
      * Label for connected clients in the subMenu
@@ -146,7 +134,8 @@ public class Client implements Runnable  {
             try {
                 int indexCaseReceived;
                 messageReceived = in.readUTF();
-                if(messageReceived.equals("-1:initField")){
+
+                if(messageReceived.equals("-1:initField")){  // (Re) Initialize the field via server
                     System.out.println("Received field..");
                     int dimParam;
                     boolean valueBool;
@@ -175,19 +164,18 @@ public class Client implements Runnable  {
                     clientGui.initializationFieldPanel();
                 }
 
-                else if(messageReceived.equals("-1:rightClick")){
+                else if(messageReceived.equals("-1:rightClick")){   // Simulate a right click on a specific index
                     indexCaseReceived = in.readInt();
                     clientGui.updateCase(indexCaseReceived, "rightClick");
 
                 }
-                else if(messageReceived.equals("-1:leftClick")){
+                else if(messageReceived.equals("-1:leftClick")){    // Simulate a left click on a specific index
                     indexCaseReceived = in.readInt();
                     clientGui.updateCase(indexCaseReceived, "leftClick");
                 }
-                else if(messageReceived.equals("-1:connectedClients")){
+                else if(messageReceived.equals("-1:connectedClients")){  // Update the connected clients list
                     int totalConnected = in.readInt();
 
-                    // connectedClients.removeAll();
                     clientGui.getConnectedClients().removeAll();
                     for(int i = 0; i < totalConnected; i++) {
                         messageReceived = in.readUTF();
@@ -196,10 +184,9 @@ public class Client implements Runnable  {
                         System.out.println(messageReceived);
                         clientGui.getConnectedClients().add(connectedClient);
                     }
-                    // clientGui.setConnectedClientsOnMenu(connectedClients);
-                    // clientGui.getMenuBar().add(connectedClients);
                 }
                 else{
+
                     clientGui.getChatClient().addTextToChat(messageReceived);
                 }
 
@@ -210,6 +197,11 @@ public class Client implements Runnable  {
         chatReader = null;
     }
 
+
+    /**
+     * Sends a message to the server
+     * @param message
+     */
     public void sendMessageToServer(String message){
         try{
             out.writeUTF(message);
@@ -219,6 +211,11 @@ public class Client implements Runnable  {
         }
     }
 
+    /**
+     * Simulate a click on a specific case
+     * @param indexCase
+     * @param notification
+     */
     public void clickOnCaseToServer(int indexCase, String notification) {
         try{
             System.out.println(notification + " " + indexCase);

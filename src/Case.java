@@ -36,7 +36,6 @@ public class Case extends JPanel implements MouseListener {
             setBorder(BorderFactory.createLoweredBevelBorder());
             if (text.equals("x")) {
                 g.drawImage(bomb.getImage(), 0, 0, getWidth(), getHeight(), this);
-                gui.gameOver();
             } else {
                 g.setColor(Color.lightGray);
                 g.fillRect(0, 0, getWidth(), getHeight());
@@ -115,6 +114,9 @@ public class Case extends JPanel implements MouseListener {
             }
         }
         repaint();
+        if(leftClick && text.equals("x") ){
+            gui.gameOver();
+        }
     }
 
     @Override
@@ -164,5 +166,16 @@ public class Case extends JPanel implements MouseListener {
         leftClick = true;
         repaint();
     }
+
+    // public void gameOver() {
+    //     JOptionPane.showMessageDialog(this, "Mine clicked on.",
+    //             "Game over", JOptionPane.INFORMATION_MESSAGE);
+    //     if(modeOnline && gui.getServer() == null){ // only client send this
+    //         gui.getClient().sendMessageToServer("-1:resetField");
+    //     }
+    //     else{
+    //         gui.startNewGame();
+    //     }
+    // }
 
 }
