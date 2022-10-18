@@ -13,7 +13,7 @@ import static java.lang.Thread.currentThread;
  * {@code Server} : minesweeper class that creates a server for communication between
  * multiple clients with dynamic multithreading.
  */
-public class Server extends JFrame implements Runnable {
+public class Server implements Runnable {
     /**
      * Server socket center.
      */
@@ -44,12 +44,10 @@ public class Server extends JFrame implements Runnable {
      */
 
      
-    /**
-     * minesweeper GUI for the game : Minesweeper.
-     */
-    private Main minesweeper;
-    private JLabel levelGameModeInfo = new JLabel();
+
     private GUI serverGui;
+    private ChatServer chatServer;
+
     public static void main(String args[]) {
         System.out.println("Running server...");
         new Server();
@@ -59,8 +57,6 @@ public class Server extends JFrame implements Runnable {
      */
     Server() {
 
-        setTitle("Server");
-        setLayout(new FlowLayout());
 
         // Chat GUI display
 
@@ -70,23 +66,30 @@ public class Server extends JFrame implements Runnable {
         infoMenu.add(totalConnectedClient);    
         infoMenu.add(connectedClients);
 
-
-        JMenuBar menuBar = new JMenuBar();
         
         
         // GUI : Minesweeper interface server-side
         Main main = new Main();
+        main.setTitle("Server");
         serverGui = main.getGui();
-        add(serverGui);
+        serverGui.setServer(this);
+        // serverGui.setConnectedClientsOnMenu(connectedClients);
+        // add(serverGui);
         
-        setJMenuBar(menuBar);
-        // Frame settings
-        setContentPane(serverGui);
-        pack();
-        // setResizable(false);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Shuts down the server when exit
-        setVisible(true);
+        // setJMenuBar(serverGui.getMenuBar());
 
+        
+        chatServer = new ChatServer();
+        main.add(chatServer);
+        main.pack();
+        // // Frame settings
+        // // setContentPane(serverGui);
+        // pack();
+        // // setResizable(false);
+        // setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Shuts down the server when exit
+        // setVisible(true);
+
+        
 
         // Threads creation
         try {// Socket manager : port 10000
@@ -99,7 +102,7 @@ public class Server extends JFrame implements Runnable {
         }
     }
 
-
+ 
 
     // NETWORK
 
@@ -125,14 +128,19 @@ public class Server extends JFrame implements Runnable {
             String pseudoClient = entree.readUTF();
             JMenuItem pseudoClientItem = new JMenuItem(pseudoClient);
             pseudoClients.add(pseudoClient);
-            connectedClients.add(pseudoClientItem);
+            // connectedClients.add(pseudoClientItem);
+            serverGui.getConnectedClients().add(pseudoClientItem);
             
             // Send data : unique id of the client.
             out.writeInt(idClient);
 
-            System.out.println("client connected: " + idClient);
+            // Connection notification to all clients connected
+            chatServer.addTextToChat(getUtcDateTime() + " [" + pseudoClient + "]: " + " is connected");
+            notifyConnectionToAll(idClient, pseudoClient, true, out);
+            
             updateConnectedClientToAll();
             sendToAllField();
+            
             // Read data from client
             String message = "";
             while (!message.equals("end")) {
@@ -152,6 +160,10 @@ public class Server extends JFrame implements Runnable {
                     else if(message.equals("-1:resetField")){
                         resetAllMineSweeper();
                     }
+                    else{
+                        chatServer.addTextToChat(getUtcDateTime() + " :[" + pseudoClient + "]: " + message);
+                        sendToAll(pseudoClient, message); // Broadcast to the others connected clients
+                    }
 
                 } catch (EOFException | SocketException e) {
                     message = "end";
@@ -159,7 +171,12 @@ public class Server extends JFrame implements Runnable {
             }
 
 
-            System.out.println("client disconnected: " + idClient);
+            
+            // Clean close of the session
+            chatServer.addTextToChat(getUtcDateTime() + " [" + pseudoClient + "]: " + " has disconnected.");
+            notifyConnectionToAll(idClient, pseudoClient, false, out);
+
+
             out.close();
             outs.remove(out);
 
@@ -167,7 +184,8 @@ public class Server extends JFrame implements Runnable {
             socket.close();
 
             pseudoClients.remove(pseudoClient);
-            connectedClients.remove(pseudoClientItem);
+            // connectedClients.remove(pseudoClientItem);
+            serverGui.getConnectedClients().remove(pseudoClientItem);
             updateConnectedClientToAll();
 
         } catch (IOException e) {// Quick cleaning
@@ -236,12 +254,52 @@ public void sendToAllField() {
                 System.out.println("error writing message : sendToAll");
             }
         });
-        
+        serverGui.timeInit();
     }
 
     public static String getUtcDateTime() {
         return ZonedDateTime.now(ZoneId.of("Etc/UTC")).format(FORMATTER);
     }
 
+    /**
+     * Notifies the connected client a specific client is connected
+     * @param idClientConnected
+     * @param pseudoClient
+     * @param message
+     */
+    public void notifyConnectionToAll(int idClientConnected, String pseudoClient, boolean isConnected, DataOutputStream outClient) {
+        String messageComplete;
+        if(isConnected){
+            messageComplete = getUtcDateTime() + " [" + pseudoClient + "]: " + " is connected";
+        }
+        else{
+            messageComplete = getUtcDateTime() + " [" + pseudoClient + "]: " + " has disconnected";
+        }
+        outs.forEach(o -> {
+            try {
+                if(!o.equals(outClient)) {
+                    o.writeUTF(messageComplete);
+                }
+            } catch (IOException e) {
+                System.out.println("error writing message : notifyConnectionToAll");
+            }
+        });
+    }
 
+    /**
+     *  Sends a message to all the connected clients
+     * @param pseudoClient
+     * @param message
+     */
+    public void sendToAll(String pseudoClient, String message) {
+        String messageComplete = getUtcDateTime() + " [" + pseudoClient + "]: " + message;
+        outs.forEach(o -> {
+            try {
+                o.writeUTF(messageComplete);
+            } catch (IOException e) {
+                System.out.println("error writing message : sendToAll");
+            }
+        });
+        
+    }
 }

@@ -88,6 +88,7 @@ public class Client implements Runnable  {
         } else {
             JOptionPane.showMessageDialog(null, "Nothing selected. Press OK to exit.",
                     "ERROR", JOptionPane.WARNING_MESSAGE);
+            clientGui.modeOffline();
         }
     }
 
@@ -127,7 +128,8 @@ public class Client implements Runnable  {
 
             JOptionPane.showMessageDialog(null, address + ":" + port + " unreachable. Retry later.",
                     "ERROR", JOptionPane.WARNING_MESSAGE);
-            setClientParameters();
+            // setClientParameters();
+            clientGui.modeOffline();
         }
     }
 
@@ -136,6 +138,8 @@ public class Client implements Runnable  {
      */
     @Override
     public void run() {
+
+        clientGui.setChatClient(pseudo, out);
 
         String messageReceived = new String();
         while (!messageReceived.equals("end")) {
@@ -182,12 +186,21 @@ public class Client implements Runnable  {
                 }
                 else if(messageReceived.equals("-1:connectedClients")){
                     int totalConnected = in.readInt();
-                    connectedClients.removeAll();
+
+                    // connectedClients.removeAll();
+                    clientGui.getConnectedClients().removeAll();
                     for(int i = 0; i < totalConnected; i++) {
                         messageReceived = in.readUTF();
                         connectedClient = new JMenuItem(messageReceived);
-                        connectedClients.add(connectedClient);
+                        // connectedClients.add(connectedClient);
+                        System.out.println(messageReceived);
+                        clientGui.getConnectedClients().add(connectedClient);
                     }
+                    // clientGui.setConnectedClientsOnMenu(connectedClients);
+                    // clientGui.getMenuBar().add(connectedClients);
+                }
+                else{
+                    clientGui.getChatClient().addTextToChat(messageReceived);
                 }
 
             } catch (IOException e) { // Server off
@@ -225,7 +238,11 @@ public class Client implements Runnable  {
             sock.close();
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            System.out.println("Stream and socket already closed");
         }
+    }
+
+    public void setConnectedClients(JMenu connectedClientsFromGUI) {
+        connectedClientsFromGUI = connectedClients;
     }
 }

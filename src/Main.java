@@ -1,5 +1,5 @@
 import javax.swing.JFrame;
-
+import java.awt.*;
 /**
  * {@code Main} application : Minesweeper program.
  */
@@ -15,13 +15,16 @@ public class Main extends JFrame {
     private Field field;
 
     Main() {
+
+        setLayout(new FlowLayout());
         setTitle("Minesweeper");
         loadGameLevel(); // Load the game level
         this.field.initField(); // initialisation of the field
 
         gui = new GUI(this);
-        setContentPane(gui); // Set the center Panel for the frame
-
+        add(gui);
+        // setContentPane(gui); // Set the center Panel for the frame
+        
         pack();
         // setResizable(false);
         setVisible(true);

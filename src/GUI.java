@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.DataOutputStream;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -78,6 +79,7 @@ public class GUI extends JPanel implements Runnable {
      * @see Levels
      */
     private Levels levelGame;
+    private JMenuBar menuBar;
 
     /**
      * Game mode's text
@@ -89,6 +91,13 @@ public class GUI extends JPanel implements Runnable {
     private Client client;
     private boolean modeOnline = false;
     private Thread clientSession;
+    private ChatClient chatClient;
+    private Server server;
+    /**
+     * Label for connected clients in the subMenu
+     */
+    private JMenu connectedClients = new JMenu("Connected clients");
+
     /**
      * Constructor for the GUI, which starts the game.
      * 
@@ -133,6 +142,7 @@ public class GUI extends JPanel implements Runnable {
         saveGame.setText("Not saved");
         saveGame.setForeground(Color.RED);
         this.levelGame = field.getLevel();
+        levelMode.setText(String.valueOf(levelGame));
         this.displayMenu();
         this.restartButton();
         this.reinitialize();
@@ -153,7 +163,7 @@ public class GUI extends JPanel implements Runnable {
         panelNorth.removeAll();
         panelNorth.setLayout(new BorderLayout());
 
-        JMenuBar menuBar = new JMenuBar();
+        menuBar = new JMenuBar();
         JMenuItem menu = new JMenu("Mode");
         JMenuItem easyMode = new JMenuItem("EASY");
         JMenuItem mediumMode = new JMenuItem("MEDIUM");
@@ -179,9 +189,10 @@ public class GUI extends JPanel implements Runnable {
         menu.add(customMode);
 
         menuBar.add(option);
-        menuBar.add(infoServer);
         menuBar.add(menu);
         menuBar.add(levelMode);
+        menuBar.add(infoServer);
+        menuBar.add(connectedClients);
         menuBar.setBorder(BorderFactory.createRaisedBevelBorder());
 
         timeSession.setForeground(Color.RED);
@@ -227,6 +238,9 @@ public class GUI extends JPanel implements Runnable {
 
     }
 
+    /**
+     * Activates the mode online by starting a client session
+     */
     public void modeOnline() {
         if(!modeOnline){
             clientSession = new Thread(this);
@@ -234,12 +248,19 @@ public class GUI extends JPanel implements Runnable {
         }
     }
 
+    /**
+     * Desactivate the mode online by closing the connection and removing the chat
+     */
     public void modeOffline() {
         if(modeOnline){
-            client.endSession();
-            clientSession = null;
+            // client.endSession();
+            // clientSession = null;
             modeOnline = false;
+            main.remove(chatClient);
             setTitleFrame("Minesweeper");
+            main.loadGameLevel();
+            main.pack();
+            menuBar.remove(connectedClients);
             startNewGame();
 
         }
@@ -256,6 +277,7 @@ public class GUI extends JPanel implements Runnable {
 
 
     public void selectorLevelGame(Levels level) {
+        modeOnline = false;
         field = new Field(level);
         levelMode.setText(String.valueOf(level));
         saveGame.setForeground(Color.RED);
@@ -288,6 +310,7 @@ public class GUI extends JPanel implements Runnable {
                 indexCase++;
             }
         }
+        main.pack();
     }
 
     /**
@@ -325,6 +348,11 @@ public class GUI extends JPanel implements Runnable {
 
         field.initField();
         this.initializationFieldPanel();
+
+        if(server != null){     // Restart all field on client via server if he is on
+            server.sendToAllField();
+            main.pack();
+        }
     }
 
     /**
@@ -337,6 +365,9 @@ public class GUI extends JPanel implements Runnable {
      */
     public void timeInit() { //
         seconds = 0;
+        if(timer != null){
+            timer.stop();
+        }
         timeSession.setText(String.valueOf(seconds));
         timer = new Timer(1000, new ActionListener() {
             @Override
@@ -360,7 +391,6 @@ public class GUI extends JPanel implements Runnable {
     public Field getFieldFromGUI() {
         return field;
     }
-
     public void upScore() {
         score++;
         scoreLabel.setText(String.valueOf(score));
@@ -374,7 +404,7 @@ public class GUI extends JPanel implements Runnable {
     public void gameOver() {
         JOptionPane.showMessageDialog(this, "Mine clicked on.",
                 "Game over", JOptionPane.INFORMATION_MESSAGE);
-        if(modeOnline){
+        if(modeOnline && server == null){ // only client send this
             client.sendMessageToServer("-1:resetField");
         }
         else{
@@ -388,7 +418,7 @@ public class GUI extends JPanel implements Runnable {
             JOptionPane.showMessageDialog(this, "You won.",
                     "Game win", JOptionPane.INFORMATION_MESSAGE);
             openedCases = 0;
-            if(modeOnline){
+            if(modeOnline && server == null){
                 client.sendMessageToServer("-1:resetField");
             }
             else{
@@ -435,5 +465,37 @@ public class GUI extends JPanel implements Runnable {
         client.clickOnCaseToServer(indexCase, notification);
     }
 
+    public void setChatClient(String pseudo, DataOutputStream out){
+        chatClient = new ChatClient(pseudo);
+        chatClient.setOutputStream(out);
+        main.add(chatClient);
+        main.pack();
+    }
 
+    public ChatClient getChatClient() {
+        return chatClient;
+    }
+
+    public JMenuBar getMenuBar() {
+        return menuBar;
+    }
+
+    /**
+     * Check if the server is running this GUI
+     */
+    public void setServer(Server server) {
+        this.server = server;
+    }
+
+    /**
+     * Add the connected clients on the menuBar
+     * @param connectedClients
+     */
+    public void setConnectedClientsOnMenu(JMenu connectedClientsUpdate) {
+        this.connectedClients = connectedClientsUpdate;
+    }
+
+    public JMenu getConnectedClients(){
+        return connectedClients;
+    }
 }
