@@ -181,7 +181,7 @@ public class Client implements Runnable {
                     for (int i = 0; i < totalConnected; i++) {
                         messageReceived = in.readUTF();
                         connectedClient = new JMenuItem(messageReceived);
-                        // connectedClients.add(connectedClient);
+                       
                         System.out.println(messageReceived);
                         clientGui.getConnectedClients().add(connectedClient);
                     }
